@@ -1,23 +1,22 @@
 {
-  "name": "nodeprojecta2",
+  "name": "backend-proba",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon app.js",
-    "prod": "node app.js"
+    "dev": "nodemon web-api/app.js",
+    "prod": "node web-api/app.js"
   },
-  "author": "",
+  "author": "Gjorgji",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.19.0",
     "body-parser": "^1.19.0",
-    "express": "^4.17.1",
-    "randomstring": "^1.1.5"
+    "express": "^4.17.1"
   },
   "devDependencies": {
-    "dotenv": "^8.1.0",
-    "nodemon": "^1.19.3"
+    "dotenv": "^8.2.0",
+    "nodemon": "^1.19.4"
   }
 }
