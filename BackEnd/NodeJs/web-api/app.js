@@ -1,16 +1,20 @@
-var express = require("express");
+var express = require('express');
+var bodyParser = require('body-parser');
+const users = require('./users/routes');
+const middleware = require("./middleware/common")
 require('dotenv/config');
-var bodyParser = require("body-parser");
-const fs = require("fs");
-const path = require('path');
-const users = require("./users/routes")
 
 const app = express();
+
+app.use(middleware.logger);
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.use("/users", users);
+app.use('/users', users);
+
+app.use(middleware.errorRoute);
+app.use(middleware.errHandler);
 
 var port = process.env.PORT || 8080;
 
