@@ -1,6 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 const users = require('./users/routes');
+const posts = require("./posts/routes");
 const middleware = require("./middleware/common")
 require('dotenv/config');
 
@@ -12,6 +13,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use('/users', users);
+app.use('/posts', posts);
 
 app.use(middleware.errorRoute);
 app.use(middleware.errHandler);
@@ -19,5 +21,5 @@ app.use(middleware.errHandler);
 var port = process.env.PORT || 8080;
 
 app.listen(port, () => {
-        console.log(`API is listenig on port ${port}!`);
+    console.log(`API is listenig on port ${port}!`);
 });

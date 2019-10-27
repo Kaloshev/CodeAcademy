@@ -1,51 +1,97 @@
 const fs = require('fs');
 const path = require('path');
 const validator = require("../helper")
+const conn = require("../database")
 
-getAllUsers = (req, res) => {
-    let rawdata = fs.readFileSync(path.join(__dirname, 'users.json'));
-    let users = JSON.parse(rawdata);
-    res.status(200).send(users);
+getAllUsersQuery = () => {
+    const query = "SELECT * FROM user"
+    return new Promise((resolve, reject) => {
+        conn.query(query, function (error, results, fields) {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(results);
+            };
+        });
+    });
+}
+
+getAllUsers = async (req, res) => {
+    try {
+        const users = await getAllUsersQuery();
+        res.status(200).send(users);
+    } catch (error) {
+        res.status(500).send(error);
+    }
 };
 
-getSpecificUser = (req, res, next) => {
-    let rawdata = fs.readFileSync(path.join(__dirname, 'users.json'));
-    let users = JSON.parse(rawdata);
+getSpecificUserQuery = (id) => {
+    const query = "SELECT * FROM user WHERE id = ?"
+    return new Promise((resolve, reject) => {
+        conn.query(query, [id], function (error, results, fields) {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(results);
+            };
+        });
+    });
+}
 
-    if (req.params.id == 0) {
-        var error = new Error("Id can not be 0!");
+
+getSpecificUser = async (req, res, next) => {
+    if (req.params.id <= 0) {
+        var error = new Error("Id can not be 0 or less then 0!");
         error.status = 401;
         next(error);
     }
-    let currentUser = users.filter((x) => {
-        return x.id == req.params.id;
-    });
-    res.status(200).send(currentUser[0]);
+    try {
+        const specificUser = await getSpecificUserQuery(req.params.id)
+        res.status(200).send(specificUser);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+
 };
 
-crateUser = (req, res, next) => {
-    let rawdata = fs.readFileSync(path.join(__dirname, 'users.json'));
-    let users = JSON.parse(rawdata);
-    var isValidEmail = validator.emailValidator(req.body.email);
-    var isValidAge = validator.ageValidator(req.body.age);
-    if (!isValidEmail && !isValidAge) {
-        var error = new Error("E-mail is too short or you are underage!");
-        error.status = 401;
-        next(error)
-    } else if (!isValidEmail) {
-        var error = new Error("E-mail is too short!");
-        error.status = 401;
-        next(error)
-    } else if (!isValidAge) {
-        var error = new Error("You are under age, you must be 18 or more to create user!");
-        error.status = 401;
-        next(error)
-    } else {
-        users.push(req.body);
-        let data = JSON.stringify(users, null, 4);
-        fs.writeFileSync(path.join(__dirname, 'users.json'), data);
-        res.status(201).send("User has been created!");
+createUserQuery = (name) => {
+    const query = "INSERT INTO user(name) VALUES (?)"
+    return new Promise((resolve, reject) => {
+        conn.query(query, [name], function (error, results, fields) {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(results);
+            };
+        });
+    });
+}
+
+crateUser = async (req, res,) => {
+    // var isValidEmail = validator.emailValidator(req.body.email);
+    // var isValidAge = validator.ageValidator(req.body.age);
+    // if (!isValidEmail && !isValidAge) {
+    //     var error = new Error("E-mail is too short or you are underage!");
+    //     error.status = 401;
+    //     next(error)
+    // } else if (!isValidEmail) {
+    //     var error = new Error("E-mail is too short!");
+    //     error.status = 401;
+    //     next(error)
+    // } else if (!isValidAge) {
+    //     var error = new Error("You are under age, you must be 18 or more to create user!");
+    //     error.status = 401;
+    //     next(error)
+    // }
+    try {
+        const createdUser = await createUserQuery(req.body)
+        console.log(req.body)
+        res.status(200).send(createdUser);
+    } catch (error) {
+        res.status(500).send(error);
+        console.log("error")
     }
+
 };
 
 updateUser = (req, res) => {

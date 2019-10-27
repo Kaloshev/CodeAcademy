@@ -8,9 +8,9 @@ emailValidator = (email) => {
 
 nameValidator = (name) => {
     if (name == "GJorgji") {
-        return false
-    } else {
         return true
+    } else {
+        return false
     }
 };
 
