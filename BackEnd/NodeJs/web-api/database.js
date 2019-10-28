@@ -7,7 +7,8 @@ var connection = mysql.createConnection({
     user: 'gjorgji',
     // password: '123qweasdzxc',
     password: process.env.PASSWORD,
-    database: 'code_academy_2019'
+    database: 'code_academy_2019',
+    multipleStatements: true
 });
 
 connection.connect((error) => {

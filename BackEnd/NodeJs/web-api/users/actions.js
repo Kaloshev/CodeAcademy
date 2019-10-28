@@ -54,10 +54,11 @@ getSpecificUser = async (req, res, next) => {
 
 };
 
-createUserQuery = (name) => {
-    const query = "INSERT INTO user(name) VALUES (?)"
+createUserQuery = (name, surname, email, age, isActive) => {
+    // var reqBody = req.body;
+    const query = "INSERT INTO user(name, surname, email, age, isActive) VALUES (?, ?, ?, ?, ?)"
     return new Promise((resolve, reject) => {
-        conn.query(query, [name], function (error, results, fields) {
+        conn.query(query, [req.body.name][req.body.surname][req.body.email][req.body.age][req.body.isActive], function (error, results, fields) {
             if (error) {
                 reject(error);
             } else {
@@ -67,7 +68,7 @@ createUserQuery = (name) => {
     });
 }
 
-crateUser = async (req, res,) => {
+crateUser = async (req, res, ) => {
     // var isValidEmail = validator.emailValidator(req.body.email);
     // var isValidAge = validator.ageValidator(req.body.age);
     // if (!isValidEmail && !isValidAge) {
@@ -84,7 +85,7 @@ crateUser = async (req, res,) => {
     //     next(error)
     // }
     try {
-        const createdUser = await createUserQuery(req.body)
+        const createdUser = await createUserQuery(name, surname, email, age, isActive)
         console.log(req.body)
         res.status(200).send(createdUser);
     } catch (error) {
