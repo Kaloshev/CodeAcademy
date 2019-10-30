@@ -90,21 +90,21 @@ createUserQuery = (name, surname, email, age, isActive) => {
 }
 
 crateUser = async (req, res, ) => {
-    // var isValidEmail = validator.emailValidator(req.body.email);
-    // var isValidAge = validator.ageValidator(req.body.age);
-    // if (!isValidEmail && !isValidAge) {
-    //     var error = new Error("E-mail is too short or you are underage!");
-    //     error.status = 401;
-    //     next(error)
-    // } else if (!isValidEmail) {
-    //     var error = new Error("E-mail is too short!");
-    //     error.status = 401;
-    //     next(error)
-    // } else if (!isValidAge) {
-    //     var error = new Error("You are under age, you must be 18 or more to create user!");
-    //     error.status = 401;
-    //     next(error)
-    // }
+    var isValidEmail = validator.emailValidator(req.body.email);
+    var isValidAge = validator.ageValidator(req.body.age);
+    if (!isValidEmail && !isValidAge) {
+        var error = new Error("E-mail is too short or you are underage!");
+        error.status = 401;
+        next(error)
+    } else if (!isValidEmail) {
+        var error = new Error("E-mail is too short!");
+        error.status = 401;
+        next(error)
+    } else if (!isValidAge) {
+        var error = new Error("You are under age, you must be 18 or more to create user!");
+        error.status = 401;
+        next(error)
+    }
     try {
 
         const createdUser = await createUserQuery(req.body.name, req.body.surname, req.body.email, req.body.age, req.body.isActive)
@@ -117,10 +117,10 @@ crateUser = async (req, res, ) => {
 
 };
 
-updateUserQuery = (name, email, age, id) => {
-    const query = `UPDATE user SET name = ?, email = ?, age= ? WHERE id = ?`;
+updateUserQuery = (name, surname, email, age, isActive, id) => {
+    const query = `UPDATE user SET name = ?,surname = ?, email = ?, age= ?, isActive = ? WHERE id = ?`;
     return new Promise((resolve, reject) => {
-        conn.query(query, [name, email, age, id], function (error, results, fields) {
+        conn.query(query, [name, surname, email, age, isActive, id], function (error, results, fields) {
             if (error) {
                 reject(error)
             } else {
@@ -133,7 +133,7 @@ updateUserQuery = (name, email, age, id) => {
 updateUser = async (req, res) => {
     try {
         const update = req.body;
-        const updatedUser = await updateUserQuery(update.name, update.email, update.age, req.params.id)
+        const updatedUser = await updateUserQuery(update.name, update.surname, update.email, update.age, update.isActive, req.params.id)
         console.log(req.body)
         res.status(200).send(updatedUser);
     } catch (error) {
@@ -157,22 +157,41 @@ updateUser = async (req, res) => {
     //     }
     // })
 };
+updateSpecificUserQuery = (name, surname, id) => {
+    const query = `UPDATE user SET name = ?,surname = ? WHERE id = ?`;
+    return new Promise((resolve, reject) => {
+        conn.query(query, [name, surname, id], function (error, results, fields) {
+            if (error) {
+                reject(error)
+            } else {
+                resolve(results)
+            }
+        });
+    });
+}
 
-updateSpecificUser = (req, res) => {
+updateSpecificUser = async (req, res) => {
+    try {
+        var reqBody = req.body;
+        const updateSpecificUser = await updateSpecificUserQuery(reqBody.name, reqBody.surname, req.params.id);
+        res.status(200).send(updateSpecificUser);
+    } catch (error) {
+        res.status(500).send(error)
 
+    }
     // console.log(req.params.id)
-    const updatedUser = req.body
-    users.forEach(user => {
-        if (user.id == req.params.id) {
-            user.id = updatedUser.id ? updatedUser.id : user.id;
-            user.name = updatedUser.name ? updatedUser.name : user.name;
-            user.surname = updatedUser.surname ? updatedUser.surname : user.surname;
+    // const updatedUser = req.body
+    // users.forEach(user => {
+    //     if (user.id == req.params.id) {
+    //         user.id = updatedUser.id ? updatedUser.id : user.id;
+    //         user.name = updatedUser.name ? updatedUser.name : user.name;
+    //         user.surname = updatedUser.surname ? updatedUser.surname : user.surname;
 
-            res.status(400).send(`User with id: ${req.params.id} has been updated, with user id: ${user.id}`)
-            let data = JSON.stringify(users, null, 4);
-            fs.writeFileSync(path.join(__dirname, 'users.json'), data);
-        }
-    })
+    //         res.status(400).send(`User with id: ${req.params.id} has been updated, with user id: ${user.id}`)
+    //         let data = JSON.stringify(users, null, 4);
+    //         fs.writeFileSync(path.join(__dirname, 'users.json'), data);
+    //     }
+    // })
 };
 
 deleteUser = (req, res) => {

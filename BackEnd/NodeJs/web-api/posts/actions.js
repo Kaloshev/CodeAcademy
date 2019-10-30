@@ -2,10 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const conn = require("../database")
 
-getAllPostsQuery = (post) => {
-    const query = "SELECT * FROM user join posts ON user.id = posts.userId WHERE userId = ?"
+getAllPostsQuery = () => {
+    const query = "SELECT * FROM posts"
     return new Promise((resolve, reject) => {
-        conn.query(query,[post.id] ,function (error, results, fields) {
+        conn.query(query, function (error, results, fields) {
             if (error) {
                 reject(error);
             } else {
@@ -17,9 +17,7 @@ getAllPostsQuery = (post) => {
 
 getAllPosts = async (req, res) => {
     try {
-        const post = req.params
-        const posts = await getAllPostsQuery(post);
-        console.log(req.params)
+        const posts = await getAllPostsQuery();
         res.status(200).send(posts);
     } catch (error) {
         res.status(500).send(error);
@@ -69,21 +67,6 @@ createPostQuery = (post) => {
 }
 
 cratePost = async (req, res, ) => {
-    // var isValidEmail = validator.emailValidator(req.body.email);
-    // var isValidAge = validator.ageValidator(req.body.age);
-    // if (!isValidEmail && !isValidAge) {
-    //     var error = new Error("E-mail is too short or you are underage!");
-    //     error.status = 401;
-    //     next(error)
-    // } else if (!isValidEmail) {
-    //     var error = new Error("E-mail is too short!");
-    //     error.status = 401;
-    //     next(error)
-    // } else if (!isValidAge) {
-    //     var error = new Error("You are under age, you must be 18 or more to create user!");
-    //     error.status = 401;
-    //     next(error)
-    // }
     try {
         const post = req.body
         const createdPost = await createPostQuery(post)
