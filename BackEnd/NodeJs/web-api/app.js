@@ -14,6 +14,7 @@ app.use(bodyParser.json());
 
 app.use('/users', users);
 app.use('/posts', posts);
+app.use('/users/:id/posts', posts);
 
 app.use(middleware.errorRoute);
 app.use(middleware.errHandler);

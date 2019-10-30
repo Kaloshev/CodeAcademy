@@ -2,10 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const conn = require("../database")
 
-getAllPostsQuery = () => {
-    const query = "SELECT * FROM posts"
+getAllPostsQuery = (post) => {
+    const query = "SELECT * FROM user join posts ON user.id = posts.userId WHERE userId = ?"
     return new Promise((resolve, reject) => {
-        conn.query(query, function (error, results, fields) {
+        conn.query(query,[post.id] ,function (error, results, fields) {
             if (error) {
                 reject(error);
             } else {
@@ -17,7 +17,9 @@ getAllPostsQuery = () => {
 
 getAllPosts = async (req, res) => {
     try {
-        const posts = await getAllPostsQuery();
+        const post = req.params
+        const posts = await getAllPostsQuery(post);
+        console.log(req.params)
         res.status(200).send(posts);
     } catch (error) {
         res.status(500).send(error);
@@ -53,12 +55,10 @@ getSpecificPost = async (req, res, next) => {
 
 };
 
-/**** MORA DA GO DORABOTAM CREATE I ZA POST I ZA USER !!!! */
-
 createPostQuery = (post) => {
-    const query = "INSERT INTO user(name) VALUES (?)"
+    const query = "INSERT INTO posts(text,likes,createdOn, userId) VALUES (?,?,now(), ?)"
     return new Promise((resolve, reject) => {
-        conn.query(query, [name], function (error, results, fields) {
+        conn.query(query, [post.text, post.likes, post.userId], function (error, results, fields) {
             if (error) {
                 reject(error);
             } else {
@@ -85,8 +85,8 @@ cratePost = async (req, res, ) => {
     //     next(error)
     // }
     try {
-        const createdPost = await createPostQuery(req.body)
-        console.log(req.body)
+        const post = req.body
+        const createdPost = await createPostQuery(post)
         res.status(200).send(createdPost);
     } catch (error) {
         res.status(500).send(error);

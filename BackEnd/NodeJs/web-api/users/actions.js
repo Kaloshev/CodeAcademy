@@ -54,11 +54,32 @@ getSpecificUser = async (req, res, next) => {
 
 };
 
+getSpecificUserPostsQuery = (id) => {
+    const query = "SELECT * FROM user join posts ON user.id = posts.userId WHERE userId = ?";
+    return new Promise((resolve, reject) => {
+        conn.query(query, [id], function (error, results, fields) {
+            if (error) {
+                reject(error)
+            } else {
+                resolve(results)
+            }
+        });
+    });
+}
+
+getSpecificUserPosts = async (req, res) => {
+    try {
+        const specificUserPosts = await getSpecificUserPostsQuery(req.params.id)
+        res.status(200).send(specificUserPosts)
+    } catch (error) {
+        res.status(500).send(error)
+    }
+}
+
 createUserQuery = (name, surname, email, age, isActive) => {
-    // var reqBody = req.body;
     const query = "INSERT INTO user(name, surname, email, age, isActive) VALUES (?, ?, ?, ?, ?)"
     return new Promise((resolve, reject) => {
-        conn.query(query, [req.body.name][req.body.surname][req.body.email][req.body.age][req.body.isActive], function (error, results, fields) {
+        conn.query(query, [name, surname, email, age, isActive], function (error, results, fields) {
             if (error) {
                 reject(error);
             } else {
@@ -85,7 +106,8 @@ crateUser = async (req, res, ) => {
     //     next(error)
     // }
     try {
-        const createdUser = await createUserQuery(name, surname, email, age, isActive)
+
+        const createdUser = await createUserQuery(req.body.name, req.body.surname, req.body.email, req.body.age, req.body.isActive)
         console.log(req.body)
         res.status(200).send(createdUser);
     } catch (error) {
@@ -95,31 +117,49 @@ crateUser = async (req, res, ) => {
 
 };
 
-updateUser = (req, res) => {
-    let rawdata = fs.readFileSync(path.join(__dirname, 'users.json'));
-    let users = JSON.parse(rawdata);
+updateUserQuery = (name, email, age, id) => {
+    const query = `UPDATE user SET name = ?, email = ?, age= ? WHERE id = ?`;
+    return new Promise((resolve, reject) => {
+        conn.query(query, [name, email, age, id], function (error, results, fields) {
+            if (error) {
+                reject(error)
+            } else {
+                resolve(results)
+            }
+        });
+    });
+}
 
-    console.log(req.params.id)
-    const updatedUser = req.body
-    users.forEach(user => {
-        if (user.id == req.params.id) {
-            user.id = updatedUser.id ? updatedUser.id : user.id;
-            user.name = updatedUser.name ? updatedUser.name : user.name;
-            user.surname = updatedUser.surname ? updatedUser.surname : user.surname;
-            user.email = updatedUser.email ? updatedUser.email : user.email;
-            user.age = updatedUser.age ? updatedUser.age : user.age;
-            user.isActive = updatedUser.isActive ? updatedUser.isActive : user.isActive;
+updateUser = async (req, res) => {
+    try {
+        const update = req.body;
+        const updatedUser = await updateUserQuery(update.name, update.email, update.age, req.params.id)
+        console.log(req.body)
+        res.status(200).send(updatedUser);
+    } catch (error) {
+        res.status(500).send(error);
+        console.log("error")
+    }
 
-            res.status(400).send(`User with id: ${req.params.id} has been updated, with user id: ${user.id}`)
-            let data = JSON.stringify(users, null, 4);
-            fs.writeFileSync(path.join(__dirname, 'users.json'), data);
-        }
-    })
+    // const updatedUser = req.body
+    // users.forEach(user => {
+    //     if (user.id == req.params.id) {
+    //         user.id = updatedUser.id ? updatedUser.id : user.id;
+    //         user.name = updatedUser.name ? updatedUser.name : user.name;
+    //         user.surname = updatedUser.surname ? updatedUser.surname : user.surname;
+    //         user.email = updatedUser.email ? updatedUser.email : user.email;
+    //         user.age = updatedUser.age ? updatedUser.age : user.age;
+    //         user.isActive = updatedUser.isActive ? updatedUser.isActive : user.isActive;
+
+    //         res.status(400).send(`User with id: ${req.params.id} has been updated, with user id: ${user.id}`)
+    //         let data = JSON.stringify(users, null, 4);
+    //         fs.writeFileSync(path.join(__dirname, 'users.json'), data);
+    //     }
+    // })
 };
 
 updateSpecificUser = (req, res) => {
-    let rawdata = fs.readFileSync(path.join(__dirname, 'users.json'));
-    let users = JSON.parse(rawdata);
+
     // console.log(req.params.id)
     const updatedUser = req.body
     users.forEach(user => {
@@ -151,6 +191,7 @@ deleteUser = (req, res) => {
 module.exports = {
     getAllUsers,
     getSpecificUser,
+    getSpecificUserPosts,
     crateUser,
     updateUser,
     updateSpecificUser,
