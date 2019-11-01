@@ -3,11 +3,11 @@ const actions = require("./actions")
 
 var routes = express.Router();
 
-routes.get('/', actions.getAllPosts);
-routes.get('/:id', actions.getSpecificPost);
-routes.post('/', actions.cratePost);
-routes.put("/:id", actions.updatePost)
-routes.patch("/:id", actions.updateSpecificPost)
-routes.delete("/:id", actions.deletePost)
+routes.get('/users/:userId/post', actions.getAllPosts);
+routes.get('/users/:userId/posts/:postId', actions.getSpecificPost);
+routes.post('/users/:userId/posts', actions.cratePost);
+routes.put("/users/:userId/posts/:postId", actions.updatePost)
+routes.patch("/users/:userId/posts/:postId", actions.updateSpecificPost)
+routes.delete("/users/:userId/posts/:id", actions.deletePost)
 
 module.exports = routes;

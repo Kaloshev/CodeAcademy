@@ -1,7 +1,8 @@
 var express = require('express');
 var bodyParser = require('body-parser');
-const users = require('./users/routes');
-const posts = require("./posts/routes");
+// const users = require('./users/routes');
+// const posts = require("./posts/routes");
+const appRouter = require("./router")
 const middleware = require("./middleware/common")
 require('dotenv/config');
 
@@ -12,9 +13,10 @@ app.use(middleware.logger);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.use('/users', users);
-app.use('/posts', posts);
-// app.use('/users/:id/posts', posts);
+// app.use('/users', users);
+// app.use('/posts', posts);
+
+app.use(appRouter);
 
 app.use(middleware.errorRoute);
 app.use(middleware.errHandler);

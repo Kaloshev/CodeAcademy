@@ -124,7 +124,12 @@ updateUserQuery = (name, surname, email, age, isActive, id) => {
             if (error) {
                 reject(error)
             } else {
-                resolve(results)
+                // console.log(results)
+                if (results.affectedRows == 0) {
+                    reject("Nema user so takvo ID")
+                } else {
+                    resolve(results)
+                }
             }
         });
     });
