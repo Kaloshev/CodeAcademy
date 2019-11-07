@@ -2,9 +2,11 @@ const fs = require('fs');
 const path = require('path');
 const validator = require("../helper")
 const conn = require("../database")
+var bcrypt = require('bcryptjs');
+var jwt = require('jsonwebtoken');
 
 getAllUsersQuery = () => {
-    const query = "SELECT * FROM user"
+    const query = "SELECT * FROM user "
     return new Promise((resolve, reject) => {
         conn.query(query, function (error, results, fields) {
             if (error) {
@@ -55,7 +57,7 @@ getSpecificUser = async (req, res, next) => {
 };
 
 getSpecificUserPostsQuery = (id) => {
-    const query = "SELECT * FROM user join posts ON user.id = posts.userId WHERE userId = ?";
+    const query = "SELECT * FROM user JOIN posts ON user.id = posts.userId WHERE user.id = ?";
     return new Promise((resolve, reject) => {
         conn.query(query, [id], function (error, results, fields) {
             if (error) {
@@ -76,10 +78,10 @@ getSpecificUserPosts = async (req, res) => {
     }
 }
 
-createUserQuery = (name, surname, email, age, isActive) => {
-    const query = "INSERT INTO user(name, surname, email, age, isActive) VALUES (?, ?, ?, ?, ?)"
+createUserQuery = (name, surname, email, age, isActive, pass) => {
+    const query = "INSERT INTO user(name, surname, email, age, isActive, password) VALUES (?, ?, ?, ?, ?, ?)"
     return new Promise((resolve, reject) => {
-        conn.query(query, [name, surname, email, age, isActive], function (error, results, fields) {
+        conn.query(query, [name, surname, email, age, isActive, pass], function (error, results, fields) {
             if (error) {
                 reject(error);
             } else {
@@ -89,25 +91,27 @@ createUserQuery = (name, surname, email, age, isActive) => {
     });
 }
 
-crateUser = async (req, res, ) => {
-    var isValidEmail = validator.emailValidator(req.body.email);
-    var isValidAge = validator.ageValidator(req.body.age);
-    if (!isValidEmail && !isValidAge) {
-        var error = new Error("E-mail is too short or you are underage!");
-        error.status = 401;
-        next(error)
-    } else if (!isValidEmail) {
-        var error = new Error("E-mail is too short!");
-        error.status = 401;
-        next(error)
-    } else if (!isValidAge) {
-        var error = new Error("You are under age, you must be 18 or more to create user!");
-        error.status = 401;
-        next(error)
-    }
+crateUser = async (req, res) => {
+    // var isValidEmail = validator.emailValidator(req.body.email);
+    // var isValidAge = validator.ageValidator(req.body.age);
+    // if (!isValidEmail && !isValidAge) {
+    //     var error = new Error("E-mail is too short or you are underage!");
+    //     error.status = 401;
+    //     next(error)
+    // } else if (!isValidEmail) {
+    //     var error = new Error("E-mail is too short!");
+    //     error.status = 401;
+    //     next(error)
+    // } else if (!isValidAge) {
+    //     var error = new Error("You are under age, you must be 18 or more to create user!");
+    //     error.status = 401;
+    //     next(error)
+    // }
     try {
-
-        const createdUser = await createUserQuery(req.body.name, req.body.surname, req.body.email, req.body.age, req.body.isActive)
+        const userRequest = req.body;
+        const passHash = bcrypt.hashSync(userRequest.password, 10);
+        const createdUser = await createUserQuery(req.body.name, req.body.surname, req.body.email, req.body.age, req.body.isActive, passHash)
+        // const createdUser = await createUserQuery(userRequest, passHash)
         console.log(req.body)
         res.status(200).send(createdUser);
     } catch (error) {
@@ -212,7 +216,47 @@ deleteUser = (req, res) => {
     res.status(200).send(`User has been deleted!`)
 };
 
+getUserByEmailQuery = (email) => {
+    const query = "SELECT * FROM user  WHERE email = ?"
+    return new Promise((resolve, reject) => {
+        conn.query(query, [email], function (error, results, fields) {
+            if (error) {
+                reject(error);
+            } else {
+                console.log(results)
+                resolve(results);
+            };
+        });
+    });
+
+}
+
+logInUser = async (req, res) => {
+    const email = req.body.email;
+    const pass = req.body.password;
+    try {
+        const user = await getUserByEmailQuery(email)
+        var newUser = user[0];
+        const matchPass = bcrypt.compareSync(pass, newUser.password)
+        if (matchPass) {
+            var token = jwt.sign({ newUser }, 'aaaa',{ expiresIn: "1h" });
+            // res.status(200).send("Password match");
+            res.status(200).send(token);
+            console.log(matchPass);
+
+        } else {
+            res.status(401).send("WRONG PASSWORD");
+            console.log(matchPass);
+
+        }
+    } catch (error) {
+        res.status(500).send(error);
+    }
+
+}
+
 module.exports = {
+    logInUser,
     getAllUsers,
     getSpecificUser,
     getSpecificUserPosts,
